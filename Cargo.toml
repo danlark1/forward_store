@@ -1,0 +1,13 @@
+[package]
+name = "forward_store"
+version = "0.1.0"
+edition = "2021"
+
+
+[dev-dependencies]
+criterion = "0.3"
+aligned-array = "1.0.1"
+
+[[bench]]
+name = "forward_store"
+harness = false
