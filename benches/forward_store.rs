@@ -46,6 +46,9 @@ fn register_benchmarks<Store: Copy + Default, Load: Copy>(
     c: &mut Criterion,
     arr: &mut Aligned<A16, [u8; 32]>,
 ) {
+    if std::mem::size_of::<Store>() < std::mem::size_of::<Load>() {
+        return;
+    }
     register_benchmark::<Store, Load, 0>(c, arr);
     register_benchmark::<Store, Load, 1>(c, arr);
     register_benchmark::<Store, Load, 2>(c, arr);
@@ -64,22 +67,26 @@ fn register_benchmarks<Store: Copy + Default, Load: Copy>(
     register_benchmark::<Store, Load, 15>(c, arr);
 }
 
+macro_rules! register_all {
+    ( $c: expr, $arr: expr, $( $x: ty ),+ ) => {
+        register_all!(@inner $c, $arr, $($x),+ => $($x),+);
+    };
+    (@inner $c: expr, $arr: expr, $x: ty, $($xx: ty),+ => $($yy: ty),+) => {
+        register_all!(@inner $c, $arr, $x => $($yy),+);
+        register_all!(@inner $c, $arr, $($xx),+ => $($yy),+);
+    };
+    (@inner $c: expr, $arr: expr, $x: ty => $y: ty, $($yy: ty),+) => {
+        register_all!(@inner $c, $arr, $x => $y);
+        register_all!(@inner $c, $arr, $x => $($yy),+);
+    };
+    (@inner $c: expr, $arr: expr, $x: ty => $y: ty) => {
+        register_benchmarks::<$x, $y>($c, $arr);
+    };
+}
+
 fn forward_store_benchmark(c: &mut Criterion) {
     let mut arr: Aligned<A16, [u8; 32]> = Aligned([0; 32]);
-    register_benchmarks::<u16, u8>(c, &mut arr);
-    register_benchmarks::<u16, u16>(c, &mut arr);
-    register_benchmarks::<u32, u8>(c, &mut arr);
-    register_benchmarks::<u32, u16>(c, &mut arr);
-    register_benchmarks::<u32, u32>(c, &mut arr);
-    register_benchmarks::<u64, u8>(c, &mut arr);
-    register_benchmarks::<u64, u16>(c, &mut arr);
-    register_benchmarks::<u64, u32>(c, &mut arr);
-    register_benchmarks::<u64, u64>(c, &mut arr);
-    register_benchmarks::<u128, u8>(c, &mut arr);
-    register_benchmarks::<u128, u16>(c, &mut arr);
-    register_benchmarks::<u128, u32>(c, &mut arr);
-    register_benchmarks::<u128, u64>(c, &mut arr);
-    register_benchmarks::<u128, u128>(c, &mut arr);
+    register_all!(c, &mut arr, u8, u16, u32, u64, u128);
 }
 
 criterion_group!(benches, forward_store_benchmark);
