@@ -9,9 +9,9 @@ movaps  xmmword ptr [rsp], xmm0
 mov     eax, dword ptr [rsp + 2]
 ```
 
-It loads 16 bytes and reads 4 bytes with the offset 2.
+It stores 16 bytes and reads 4 bytes with the offset 2.
 
-Benchmarks are represented in a `store_X_load_Y_offset_Z` where we store X bytes, load Y bytes with the offset Z. Latency tables for some random Intel, AMD and Arm processors.
+Benchmarks are represented in a `store_X_load_Y_offset_Z` where we store X bytes, load Y bytes with the offset Z (obviously, Y + Z $\leq$ X). Latency tables for some random Intel, AMD and Arm processors.
 
 ![Rome](media/rome.png)
 
